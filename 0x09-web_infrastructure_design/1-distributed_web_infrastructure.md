@@ -23,5 +23,5 @@ For example, if the Primary MySQL database server is down, the entire site would
 - Security issues.
 The data transmitted over the network isn't encrypted using an SSL certificate so hackers can spy on the network. There is no way of blocking unauthorized IPs since there's no firewall installed on any server.
 
-No monitoring.
+- No monitoring.
 We have no way of knowing the status of each server since they're not being monitored.
