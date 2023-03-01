@@ -1,40 +1,34 @@
 #!/usr/bin/python3
 """ Count it! """
+import requests
+import json
+import re
 
-from collections import defaultdict
-from requests import get
-
-REDDIT = "https://www.reddit.com/"
-HEADERS = {'User-Agent': 'esw1229/0.0.1'}
-
-def count_words(subreddit, word_list, after=None, word_dict=None):
-    if word_dict is None:
-        word_dict = defaultdict(int)
+def count_words(subreddit, word_list, after=None, count_dict=None):
+    if count_dict is None:
+        count_dict = {}
+    url = f"https://www.reddit.com/r/{subreddit}/hot.json"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    params = {"limit": "100"}
+    if after is not None:
+        params["after"] = after
+    response = requests.get(url, headers=headers, params=params, allow_redirects=False)
+    if response.status_code != 200:
+        return
+    data = json.loads(response.text)
+    posts = data["data"]["children"]
+    for post in posts:
+        title = post["data"]["title"]
         for word in word_list:
-            word_dict[word] = 0
+            if word.lower() in re.findall(r'\b[a-z]+\b', title.lower()):
+                if word.lower() in count_dict:
+                    count_dict[word.lower()] += 1
+                else:
+                    count_dict[word.lower()] = 1
+    if len(posts) == 100:
+        count_words(subreddit, word_list, after=posts[-1]["data"]["name"], count_dict=count_dict)
+    else:
+        sorted_counts = sorted(count_dict.items(), key=lambda x: (-x[1], x[0]))
+        for count in sorted_counts:
+            print(f"{count[0]}: {count[1]}")
 
-    while after is not None:
-        params = {'limit': 100, 'after': after}
-        url = REDDIT + f"r/{subreddit}/hot/.json"
-        response = get(url, headers=HEADERS, params=params, allow_redirects=False)
-
-        if response.status_code != 200:
-            print(f"Error {response.status_code} retrieving posts for subreddit {subreddit}")
-            return None
-
-        try:
-            data = response.json()['data']
-            after = data.get('after')
-            children = data.get('children')
-            for child in children:
-                title = child['data']['title']
-                words = title.lower().split()
-                for word in word_list:
-                    word_dict[word] += words.count(word.lower())
-        except (ValueError, KeyError, AttributeError) as e:
-            print(f"Error processing response: {e}")
-            return None
-
-    word_list = [[key, value] for key, value in word_dict.items()]
-    word_list = sorted(word_list, key=lambda x: (-x[1], x[0]))
-    for word, count in word
