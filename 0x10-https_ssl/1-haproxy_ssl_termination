@@ -35,10 +35,10 @@ defaults
 
 frontend myfrontend
 	bind *:80
-	bind *:443 ssl crt /etc/haproxy/certs/www.uniqueel.tech.pem
+	bind *:443 ssl crt /etc/haproxy/certs/www.royalluxurycollectables.tech.pem
 	default_backend myservers
 
 backend myservers
 	balance roundrobin
-	server web-01 52.86.163.36:80 check
-	server web-02 100.27.11.190:80 check
+	server 72650-web-01 52.86.163.36:80 check
+	server 72650-web-02 100.27.11.190:80 check
